@@ -18,6 +18,8 @@ namespace CST350_MinesweeperMilestone
                 options.Cookie.IsEssential = true; /// Make the session cookie essential
             });
 
+            builder.Services.AddScoped<CST350_MinesweeperMilestone.Services.MinesweeperService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

@@ -1,6 +1,7 @@
 ﻿using CST350_MinesweeperMilestone.Data;
 using CST350_MinesweeperMilestone.Filters;
 using CST350_MinesweeperMilestone.Models;
+using CST350_MinesweeperMilestone.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CST350_MinesweeperMilestone.Controllers
@@ -8,10 +9,12 @@ namespace CST350_MinesweeperMilestone.Controllers
     public class UserController : Controller
     {
         private readonly UserRepository _repo;
+        private readonly MinesweeperService _ms;
 
-        public UserController(IConfiguration config)
+        public UserController(IConfiguration config, MinesweeperService ms)
         {
             _repo = new UserRepository(config);
+            _ms = ms;
         }
 
         // Get Request for /User/Register
@@ -90,6 +93,62 @@ namespace CST350_MinesweeperMilestone.Controllers
         public IActionResult StartGame()
         {
             return View();
+        }
+
+
+
+
+        private const string GameSessionKey = "MS_GAME";
+
+        [SessionCheckFilter]
+        [HttpPost]
+        public IActionResult NewGame(int rows, int cols, int mines)
+        {
+            var game = _ms.CreateNew(rows, cols, mines);
+            HttpContext.Session.SetObject(GameSessionKey, game);
+
+            // return initial state to render board
+            return Json(new
+            {
+                rows = game.Rows,
+                cols = game.Cols,
+                flagsLeft = game.FlagsLeft,
+                statusMsg = game.StatusMsg
+            });
+        }
+
+        [SessionCheckFilter]
+        [HttpPost]
+        public IActionResult Reveal(int r, int c)
+        {
+            var game = HttpContext.Session.GetObject<MsGameState>(GameSessionKey);
+            if (game == null) return BadRequest("No game in session. Start a new game.");
+
+            var resp = _ms.Reveal(game, r, c);
+            HttpContext.Session.SetObject(GameSessionKey, game);
+
+            return Json(resp);
+        }
+
+
+        [SessionCheckFilter]
+        [HttpPost]
+        public IActionResult ToggleFlag(int r, int c)
+        {
+            var game = HttpContext.Session.GetObject<MsGameState>(GameSessionKey);
+            if (game == null) return BadRequest("No game in session. Start a new game.");
+
+            var resp = _ms.ToggleFlag(game, r, c);
+            HttpContext.Session.SetObject(GameSessionKey, game);
+
+            return Json(resp);
+        }
+
+        [SessionCheckFilter]
+        [HttpGet]
+        public IActionResult Timestamp()
+        {
+            return Content(DateTime.Now.ToString("hh:mm:ss tt"));
         }
     }
 }
