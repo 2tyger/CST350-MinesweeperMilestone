@@ -3,6 +3,7 @@ using CST350_MinesweeperMilestone.Filters;
 using CST350_MinesweeperMilestone.Models;
 using CST350_MinesweeperMilestone.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace CST350_MinesweeperMilestone.Controllers
 {
@@ -10,11 +11,13 @@ namespace CST350_MinesweeperMilestone.Controllers
     {
         private readonly UserRepository _repo;
         private readonly MinesweeperService _ms;
+        private readonly GameRepository _games;
 
         public UserController(IConfiguration config, MinesweeperService ms)
         {
             _repo = new UserRepository(config);
             _ms = ms;
+            _games = new GameRepository(config);
         }
 
         // Get Request for /User/Register
@@ -149,6 +152,38 @@ namespace CST350_MinesweeperMilestone.Controllers
         public IActionResult Timestamp()
         {
             return Content(DateTime.Now.ToString("hh:mm:ss tt"));
+        }
+
+        [SessionCheckFilter]
+        [HttpPost]
+        public IActionResult SaveGame()
+        {
+            var game = HttpContext.Session.GetObject<MsGameState>(GameSessionKey);
+            if (game == null) return BadRequest("No game in session. Start a new game.");
+
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId)) return BadRequest("User not found in session.");
+
+            var dateSaved = DateTime.Now;
+            var gameData = JsonSerializer.Serialize(game);
+            var id = _games.SaveGame(userId, gameData, dateSaved);
+
+            return Json(new { id, dateSaved });
+        }
+
+        [SessionCheckFilter]
+        [HttpPost]
+        public IActionResult LoadSavedGame(int id)
+        {
+            var saved = _games.GetGameById(id);
+            if (saved == null) return NotFound();
+
+            var game = JsonSerializer.Deserialize<MsGameState>(saved.GameData);
+            if (game == null) return BadRequest("Saved game data is invalid.");
+
+            HttpContext.Session.SetObject(GameSessionKey, game);
+
+            return Json(new { game });
         }
     }
 }

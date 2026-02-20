@@ -24,6 +24,8 @@
     <div class="col-md-6 d-flex align-items-end">
         <button id="newGameBtn" class="btn btn-primary me-2">New Game</button>
         <button id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+        <button id="saveGameBtn" class="btn btn-success ms-2">Save Game</button>
+        <button id="showSavedBtn" class="btn btn-outline-primary ms-2">Show Saved Games</button>
     </div>
 </div>
 
@@ -35,6 +37,24 @@
 </div>
 
 <div id="boardContainer" class="mt-3"></div>
+
+<div class="mt-4">
+    <h4>Saved Games</h4>
+    <div id="savedGamesStatus" class="text-muted mb-2">Click "Show Saved Games" to load.</div>
+    <div class="table-responsive">
+        <table id="savedGamesTable" class="table table-sm table-striped d-none">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>UserId</th>
+                    <th>Date Saved</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
 <style>
     #boardContainer {
@@ -88,6 +108,14 @@
 
         document.getElementById('resetBtn').addEventListener('click', function () {
             Minesweeper.reset();
+        });
+
+        document.getElementById('saveGameBtn').addEventListener('click', function () {
+            Minesweeper.saveGame();
+        });
+
+        document.getElementById('showSavedBtn').addEventListener('click', function () {
+            Minesweeper.loadSavedGames();
         });
 
         // start a default game on load
