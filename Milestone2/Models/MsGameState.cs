@@ -15,6 +15,8 @@
 
         public string StatusMsg { get; set; } = "Click \"New Game\" to start.";
 
+        public int ElapsedSeconds { get; set; }
+
         // stored as [r][c]
         public List<List<MsCell>> Board { get; set; } = new();
     }

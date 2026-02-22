@@ -156,13 +156,15 @@ namespace CST350_MinesweeperMilestone.Controllers
 
         [SessionCheckFilter]
         [HttpPost]
-        public IActionResult SaveGame()
+        public IActionResult SaveGame(int elapsedSeconds)
         {
             var game = HttpContext.Session.GetObject<MsGameState>(GameSessionKey);
             if (game == null) return BadRequest("No game in session. Start a new game.");
 
             var userIdStr = HttpContext.Session.GetString("UserId");
             if (!int.TryParse(userIdStr, out var userId)) return BadRequest("User not found in session.");
+
+            game.ElapsedSeconds = elapsedSeconds;
 
             var dateSaved = DateTime.Now;
             var gameData = JsonSerializer.Serialize(game);

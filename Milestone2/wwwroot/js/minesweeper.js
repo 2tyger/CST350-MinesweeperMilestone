@@ -65,44 +65,49 @@ const Minesweeper = (function () {
 
     function toUpdateFromCell(cell) {
         let text = "";
-        if (cell.Revealed) {
-            if (cell.Mine) text = "💣";
-            else if (cell.NeighborMines > 0) text = String(cell.NeighborMines);
-        } else if (cell.Flagged) {
+        if (cell.revealed) {
+            if (cell.mine) text = "💣";
+            else if (cell.neighborMines > 0) text = String(cell.neighborMines);
+        } else if (cell.flagged) {
             text = "🚩";
         }
 
         return {
-            id: `cell-${cell.R}-${cell.C}`,
-            revealed: cell.Revealed,
-            flagged: cell.Flagged,
-            mine: cell.Mine,
+            id: `cell-${cell.r}-${cell.c}`,
+            revealed: cell.revealed,
+            flagged: cell.flagged,
+            mine: cell.mine,
             text: text
         };
     }
 
     function renderFromGame(game) {
-        rows = game.Rows;
-        cols = game.Cols;
-        mines = game.Mines;
-        gameOver = game.IsGameOver || game.IsWin;
+        rows = game.rows;
+        cols = game.cols;
+        mines = game.mines;
+        gameOver = game.isGameOver || game.isWin;
 
         document.getElementById("rowsInput").value = rows;
         document.getElementById("colsInput").value = cols;
         document.getElementById("minesInput").value = mines;
 
         buildEmptyBoardDom(rows, cols);
-        for (let r = 0; r < game.Board.length; r++) {
-            for (let c = 0; c < game.Board[r].length; c++) {
-                applyUpdate(toUpdateFromCell(game.Board[r][c]));
+
+        for (let r = 0; r < game.board.length; r++) {
+            for (let c = 0; c < game.board[r].length; c++) {
+                applyUpdate(toUpdateFromCell(game.board[r][c]));
             }
         }
 
-        statusMsg().textContent = game.StatusMsg;
-        minesLeftEl().textContent = game.FlagsLeft;
-        timerEl().textContent = "0";
+        statusMsg().textContent = game.statusMsg;
+        minesLeftEl().textContent = game.flagsLeft;
+
+        timerEl().textContent = String(game.elapsedSeconds ?? 0);
         stopTimer();
-        if (!game.FirstClick && !gameOver) startTimer();
+
+        if (!game.firstClick && !(game.isGameOver || game.isWin)) {
+            startTimer(game.elapsedSeconds ?? 0);
+        }
     }
 
     function applyResponse(resp) {
@@ -204,16 +209,16 @@ const Minesweeper = (function () {
 
         list.forEach(g => {
             const tr = document.createElement("tr");
-            const dateText = g.DateSaved ? new Date(g.DateSaved).toLocaleString() : "--";
+            const dateText = g.dateSaved ? new Date(g.dateSaved).toLocaleString() : "--";
 
             tr.innerHTML = `
-                <td>${g.Id}</td>
-                <td>${g.UserId}</td>
-                <td>${dateText}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary me-2" data-action="load" data-id="${g.Id}">Load</button>
-                    <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${g.Id}">Delete</button>
-                </td>
+              <td>${g.id}</td>
+              <td>${g.userId}</td>
+              <td>${dateText}</td>
+              <td>
+                  <button class="btn btn-sm btn-outline-primary me-2" data-action="load" data-id="${g.id}">Load</button>
+                  <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${g.id}">Delete</button>
+              </td>
             `;
 
             tbody.appendChild(tr);
@@ -258,7 +263,7 @@ const Minesweeper = (function () {
     }
 
     function saveGame() {
-        postForm("/User/SaveGame", {})
+        postForm("/User/SaveGame", { elapsedSeconds: getElapsedSeconds() })
             .then(resp => {
                 statusMsg().textContent = `Game saved (Id ${resp.id}).`;
                 loadSavedGames();
@@ -267,6 +272,20 @@ const Minesweeper = (function () {
                 statusMsg().textContent = "Failed to save game.";
                 console.error(err);
             });
+    }
+
+    function startTimer(initialSeconds = 0) {
+        startTime = Date.now() - (initialSeconds * 1000);
+        stopTimer();
+        timerId = setInterval(() => {
+            const seconds = Math.floor((Date.now() - startTime) / 1000);
+            timerEl().textContent = seconds;
+        }, 250);
+    }
+
+    function getElapsedSeconds() {
+        if (!startTime) return parseInt(timerEl().textContent || "0", 10);
+        return Math.floor((Date.now() - startTime) / 1000);
     }
 
     function init(r, c, m) {
