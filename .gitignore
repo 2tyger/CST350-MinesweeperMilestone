@@ -418,3 +418,48 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# VS database/cache
+*.db
+*.sqlite
+*.cache
+
+# Copilot / indexing
+CopilotIndices/
+FileContentIndex/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# VS database/cache
+*.db
+*.sqlite
+*.cache
+
+# Copilot / indexing
+CopilotIndices/
+FileContentIndex/
+/.vs/VSWorkspaceState.json
+/obj/Debug/net8.0/CST350_MinesweeperMilestone.AssemblyInfo.cs
+/obj/Debug/net8.0/CST350_MinesweeperMilestone.AssemblyInfoInputs.cache
+/obj/Debug/net8.0/CST350_MinesweeperMilestone.assets.cache
+/obj/Debug/net8.0/CST350_MinesweeperMilestone.GeneratedMSBuildEditorConfig.editorconfig
+/obj/Release/net8.0/CST350_MinesweeperMilestone.AssemblyInfo.cs
+/obj/Release/net8.0/CST350_MinesweeperMilestone.AssemblyInfoInputs.cache
+/obj/Release/net8.0/CST350_MinesweeperMilestone.assets.cache
+/obj/Release/net8.0/CST350_MinesweeperMilestone.GeneratedMSBuildEditorConfig.editorconfig
